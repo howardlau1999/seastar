@@ -746,6 +746,11 @@ target_link_libraries (seastar
     yaml-cpp::yaml-cpp
     Valgrind::valgrind
     Threads::Threads)
+if (Seastar_DPDK)
+  target_link_libraries (seastar
+    PUBLIC
+      dpdk::dpdk)
+endif()
 
 set (Seastar_SANITIZE_MODES "Debug" "Sanitize")
 if ((Seastar_SANITIZE STREQUAL "ON") OR
@@ -805,6 +810,15 @@ if (MaybeUninitialized_FOUND)
       # -Wmaybe-uninitialized in here since otherwise we would have to
       # disable it on many types used inside optional<>.
       -Wno-maybe-uninitialized)
+endif ()
+
+if (Seastar_DPDK)
+  seastar_supports_flag ("-Wno-error=volatile -Werror" ErrorVolatile_FOUND)
+  if (ErrorVolatile_FOUND)
+    target_compile_options (seastar
+      PUBLIC
+        -Wno-error=volatile)
+  endif ()
 endif ()
 
 if (Seastar_SSTRING)
@@ -883,17 +897,7 @@ if (Seastar_DPDK)
   # The DPDK architecture needs to be transitively applied to consumers of Seastar as well.
   #
 
-  set (Seastar_ARCH_FOR_native "native")
-  set (Seastar_ARCH_FOR_nhm "nehalem")
-  set (Seastar_ARCH_FOR_wsm "westmere")
-  set (Seastar_ARCH_FOR_snb "sandybridge")
-  set (Seastar_ARCH_FOR_ivb "ivybridge")
-  set (Seastar_ARCH_FOR_armv8a "armv8-a")
-  set (Seastar_ARCH ${Seastar_ARCH_FOR_${Seastar_DPDK_MACHINE}})
-
-  if (NOT Seastar_ARCH)
-    message (FATAL_ERROR "Unrecognized DPDK machine identifier: ${Seastar_DPDK_MACHINE}")
-  endif ()
+  set (Seastar_ARCH ${Seastar_DPDK_MACHINE})
 
   target_compile_options (seastar
     PUBLIC -march=${Seastar_ARCH})
@@ -906,12 +910,11 @@ if (Seastar_DPDK)
   # .o file.
   add_custom_command (
     OUTPUT seastar-dpdk.o
-    COMMAND ld -r -o seastar-dpdk.o --whole-archive ${dpdk_LIBRARIES} --no-whole-archive
+    COMMAND ${CMAKE_C_COMPILER} -r -o seastar-dpdk.o ${dpdk_LIBRARIES}
   )
-
   # This just provides the include path to cmake
-  target_link_libraries (seastar
-    PUBLIC dpdk::dpdk)
+  target_include_directories (seastar
+    PUBLIC $<TARGET_PROPERTY:dpdk::dpdk,INTERFACE_INCLUDE_DIRECTORIES>)
 endif ()
 
 if (Seastar_HWLOC)
