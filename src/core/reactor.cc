@@ -4031,6 +4031,8 @@ void smp::configure(const smp_options& smp_opts, const reactor_options& reactor_
     if (thread_affinity) {
         smp::pin(allocations[0].cpu_id);
     }
+
+
     memory::configure(allocations[0].mem, mbind, hugepages_path);
 
     if (reactor_opts.abort_on_seastar_bad_alloc) {
@@ -4063,7 +4065,6 @@ void smp::configure(const smp_options& smp_opts, const reactor_options& reactor_
         dpdk::eal::init(cpus, reactor_opts._argv0, hugepages_path, native_stack ? bool(native_stack->dpdk_pmd) : false);
     }
 #endif
-
     // Better to put it into the smp class, but at smp construction time
     // correct smp::count is not known.
     boost::barrier reactors_registered(smp::count);
@@ -4185,7 +4186,7 @@ void smp::configure(const smp_options& smp_opts, const reactor_options& reactor_
 #ifdef SEASTAR_HAVE_DPDK
     if (_using_dpdk) {
         auto it = _thread_loops.begin();
-        RTE_LCORE_FOREACH_SLAVE(i) {
+        RTE_LCORE_FOREACH_WORKER(i) {
             rte_eal_remote_launch(dpdk_thread_adaptor, static_cast<void*>(&*(it++)), i);
         }
     }
