@@ -4032,15 +4032,6 @@ void smp::configure(const smp_options& smp_opts, const reactor_options& reactor_
         smp::pin(allocations[0].cpu_id);
     }
 
-#ifdef SEASTAR_HAVE_DPDK
-    if (_using_dpdk) {
-        dpdk::eal::cpuset cpus;
-        for (auto&& a : allocations) {
-            cpus[a.cpu_id] = true;
-        }
-        dpdk::eal::init(cpus, configuration);
-    }
-#endif
 
     memory::configure(allocations[0].mem, mbind, hugepages_path);
 

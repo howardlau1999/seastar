@@ -21,7 +21,7 @@
 #
 
 find_package (PkgConfig REQUIRED)
-pkg_check_modules (dpdk_PC QUIET libdpdk)
+pkg_check_modules (dpdk_PC libdpdk)
 
 if (dpdk_PC_FOUND AND dpdk_PC_STATIC_LIBRARIES)
   find_package_handle_standard_args (dpdk
@@ -31,7 +31,7 @@ if (dpdk_PC_FOUND AND dpdk_PC_STATIC_LIBRARIES)
       dpdk_PC_STATIC_LDFLAGS
       dpdk_PC_STATIC_LIBRARY_DIRS)
   if (dpdk_FOUND AND NOT (TARGET dpdk::dpdk))
-    add_library (dpdk::dpdk INTERFACE IMPORTED)
+    add_library (dpdk::dpdk INTERFACE IMPORTED GLOBAL)
     set_target_properties (dpdk::dpdk
       PROPERTIES
         INTERFACE_COMPILE_OPTIONS "${dpdk_PC_STATIC_CFLAGS}"
@@ -60,7 +60,7 @@ elseif (dpdk_PC_FOUND)
       dpdk_PC_LDFLAGS
       dpdk_PC_LIBRARY_DIRS)
   if (dpdk_FOUND AND NOT (TARGET dpdk::dpdk))
-    add_library (dpdk::dpdk INTERFACE IMPORTED)
+    add_library (dpdk::dpdk INTERFACE IMPORTED GLOBAL)
     set_target_properties (dpdk::dpdk
       PROPERTIES
         INTERFACE_COMPILE_OPTIONS "${dpdk_PC_CFLAGS}"
