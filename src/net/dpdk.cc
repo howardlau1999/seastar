@@ -1578,7 +1578,7 @@ int dpdk_device::init_port_start()
     if (  (_dev_info.rx_offload_capa & DEV_RX_OFFLOAD_UDP_CKSUM) &&
           (_dev_info.rx_offload_capa & DEV_RX_OFFLOAD_TCP_CKSUM)) {
         printf("RX checksum offload supported\n");
-        port_conf.rxmode.offloads |= DEV_RX_OFFLOAD_CHECKSUM;
+        port_conf.rxmode.offloads |= (DEV_RX_OFFLOAD_CHECKSUM & ~RTE_ETH_RX_OFFLOAD_IPV4_CKSUM);
         _hw_features.rx_csum_offload = 1;
     }
 
