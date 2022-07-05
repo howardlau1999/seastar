@@ -633,7 +633,6 @@ class dpdk_qp : public net::qp {
                     head->l3_len = oi.ip_hdr_len;
 
                     if (oi.tso_seg_size) {
-                        assert(oi.needs_ip_csum);
                         head->ol_flags |= PKT_TX_TCP_SEG;
                         head->l4_len = oi.tcp_hdr_len;
                         head->tso_segsz = oi.tso_seg_size;
@@ -1503,7 +1502,7 @@ int dpdk_device::init_port_start()
     // Set RSS mode: enable RSS if seastar is configured with more than 1 CPU.
     // Even if port has a single queue we still want the RSS feature to be
     // available in order to make HW calculate RSS hash for us.
-    if (smp::count > 1) {
+    if (false && smp::count > 1) {
         if (_dev_info.hash_key_size == 40) {
             _rss_key = default_rsskey_40bytes;
         } else if (_dev_info.hash_key_size == 52) {
@@ -1565,12 +1564,15 @@ int dpdk_device::init_port_start()
     // all together. If this assumption breaks we need to rework the below logic
     // by splitting the csum offload feature bit into separate bits for IPv4,
     // TCP and UDP.
-    assert(((_dev_info.rx_offload_capa & DEV_RX_OFFLOAD_IPV4_CKSUM) &&
-            (_dev_info.rx_offload_capa & DEV_RX_OFFLOAD_UDP_CKSUM) &&
-            (_dev_info.rx_offload_capa & DEV_RX_OFFLOAD_TCP_CKSUM)) ||
-           (!(_dev_info.rx_offload_capa & DEV_RX_OFFLOAD_IPV4_CKSUM) &&
-            !(_dev_info.rx_offload_capa & DEV_RX_OFFLOAD_UDP_CKSUM) &&
-            !(_dev_info.rx_offload_capa & DEV_RX_OFFLOAD_TCP_CKSUM)));
+    if (_dev_info.rx_offload_capa & DEV_RX_OFFLOAD_IPV4_CKSUM) {
+        printf("IPv4 cksum is on\n");
+    }
+    if (_dev_info.rx_offload_capa & DEV_RX_OFFLOAD_UDP_CKSUM) {
+        printf("UDP cksum is on\n");
+    }
+    if (_dev_info.rx_offload_capa & DEV_RX_OFFLOAD_TCP_CKSUM) {
+        printf("TCP cksum is on\n");
+    }
 
     // Set Rx checksum checking
     if (  (_dev_info.rx_offload_capa & DEV_RX_OFFLOAD_IPV4_CKSUM) &&
