@@ -122,7 +122,7 @@ ipv4::handle_received_packet(packet p, ethernet_address from) {
     }
 
     // Skip checking csum of reassembled IP datagram
-    if (!hw_features().rx_csum_offload && !p.offload_info_ref().reassembled) {
+    if (!p.offload_info_ref().reassembled) {
         checksummer csum;
         csum.sum(reinterpret_cast<char*>(iph), sizeof(*iph));
         if (csum.get() != 0) {

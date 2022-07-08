@@ -756,7 +756,7 @@ public:
     explicit tcp(inet_type& inet);
     void received(packet p, ipaddr from, ipaddr to);
     bool forward(forward_hash& out_hash_data, packet& p, size_t off);
-    listener listen(uint16_t port, size_t queue_length = 100);
+    listener listen(uint16_t port, size_t queue_length = 2048);
     connection connect(socket_address sa);
     const net::hw_features& hw_features() const { return _inet._inet.hw_features(); }
     future<> poll_tcb(ipaddr to, lw_shared_ptr<tcb> tcb);
